@@ -1,11 +1,9 @@
 const fs = require('fs');
 const { Client, Collection, Intents } = require('discord.js');
 const { token } = require('./config.json');
-var express = require('express');
 
 const client = new Client({ intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_VOICE_STATES] });
 
-var maincraServerFlag = false;
 
 client.commands = new Collection();
 const commandFiles = fs.readdirSync('./commands').filter(file => file.endsWith('.js'));
@@ -35,21 +33,6 @@ client.on('interactionCreate', async interaction => {
 });
 
 client.login(token);
-
-const app = express()
-const port = 3000
-
-app.use(express.json())
-
-app.get('/', (req, res) => {
-    res.send('Hello World!')
-})
-
-app.get('/maincra', (req, res) => {
-    maincraServerFlag = maincraServerFlag ? false : true;
-    client.channels.cache.get('694297389598507044').send(maincraServerFlag ? "Server Activado" : "Server Desactivado");
-    res.send("ServerFlag set to " + maincraServerFlag + "\n");
-})
 
 app.listen(port, () => {
     console.log(`App listening at http://localhost:${port}`)
