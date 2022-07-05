@@ -61,9 +61,11 @@ module.exports = {
                         channel.send(`Reproduciendo: ${res.title}`);
                     }
                     else {
-                        player.stop();
-                        connection.destroy();
-                        playlistMap.delete(interaction.guild.id);
+                        setTimeout(() => {
+                            player.stop();
+                            connection.destroy();
+                            playlistMap.delete(interaction.guild.id);
+                        }, 300000);
                     }
                 });
                 player.on('error', error => {
