@@ -54,25 +54,24 @@ module.exports = {
 
 
                 player.on(AudioPlayerStatus.Idle, () => {
-                    var id = interaction.guild.id;
+                    var channel = interaction.channel;
                     if (playlist.head) {
                         var res = getNextResource();
                         player.play(res.resource);
-                        client.channels.cache.get(id).send(`Reproduciendo: ${res.title}`);
+                        channel.send(`Reproduciendo: ${res.title}`);
                     }
                     else {
-                        connection.unsubscribe(player);
-                        player.destroy();
+                        player.stop();
                         connection.destroy();
                         playlistMap.delete(interaction.guild.id);
                     }
                 });
                 player.on('error', error => {
-                    var id = interaction.guild.id;
+                    var channel = interaction.channel;
                     console.error(`Error: ${error.message} with resource ${error.resource.metadata.title}`);
                     var res = getNextResource();
                     player.play(res.resource);
-                    client.channels.cache.get(id).send(`Ocurrió un error. Reproduciendo: ${res.title}`);
+                    channel.send(`Ocurrió un error. Reproduciendo: ${res.title}`);
                 });
 
                 await interaction.reply('Reproduciendo ' + res.title);

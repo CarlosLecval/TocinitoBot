@@ -1,5 +1,4 @@
 const { SlashCommandBuilder } = require('@discordjs/builders');
-var flag = require('../index.js');
 
 module.exports = {
     data: new SlashCommandBuilder()

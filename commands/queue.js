@@ -27,13 +27,20 @@ module.exports = {
 
         const playlist = playlistMap.get(interaction.guild.id);
 
-        var output = "";
-        var temp = playlist.head
-        while(temp != null) {
-            const song = playlist.head;
-            output += `- ${song.title}\n`;
-            temp = temp.next;
+        if(playlist)
+        {
+            var output = "";
+            var temp = playlist.head
+            while(temp != null) {
+                console.log(temp)
+                output += `- ${temp.title}\n`;
+                temp = temp.next;
+            }
+            await interaction.reply(output != "" ? output : "No hay nada en la lista de reproducción");
         }
-        await interaction.reply(output);
+        else
+        {
+            await interaction.reply('No hay nada en la lista de reproducción');
+        }
     },
 };

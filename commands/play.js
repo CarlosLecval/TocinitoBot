@@ -41,21 +41,23 @@ module.exports = {
         
         if (!title) {
             if (connection.state.subscription.player.state.status == 'paused') {
-                con.state.subscription.player.unpause();
+                connection.state.subscription.player.unpause();
                 await interaction.reply('Reproduciendo');
             }
             else {
-                await interaction.reply('No hay nada reproduciendo');
+                await interaction.reply('N0');
             }
         }
         else {
             const video = await videoFinder(title);
             if (video)
             {
-                const playlist = playlistMap.get(interaction.guild.id);
+                var playlist = playlistMap.get(interaction.guild.id);
                 if (!playlist) {
                     
                     playlistMap.set(interaction.guild.id, new Playlist(video.url, video.title));
+
+                    playlist = playlistMap.get(interaction.guild.id);
                     
                     const getNextResource = () => {
                         var current = playlist.pop();
@@ -67,33 +69,35 @@ module.exports = {
                         };
                     }
 
+                    var res = getNextResource();
+
                     const player = createAudioPlayer();
-                    player.play(getNextResource());
+                    player.play(res.resource);
                     connection.subscribe(player);
                     
                     player.on(AudioPlayerStatus.Idle, () => {
-                        var id = interaction.guild.id;
+                        var channel = interaction.channel;
                         if (playlist.head) {
                             var res = getNextResource();
                             player.play(res.resource);
-                            client.channels.cache.get(id).send(`Reproduciendo: ${res.title}`);
+                            channel.send(`Reproduciendo: ${res.title}`);
                         }
                         else {
-                            connection.unsubscribe(player);
-                            player.destroy();
+                            player.stop();
                             connection.destroy();
                             playlistMap.delete(interaction.guild.id);
                         }
                     });
                     player.on('error', error => {
-                        var id = interaction.guild.id;
+                        var channel = interaction.channel;
                         console.error(`Error: ${error.message} with resource ${error.resource.metadata.title}`);
+                        console.log(error);
                         var res = getNextResource();
                         player.play(res.resource);
-                        client.channels.cache.get(id).send(`Ocurrió un error. Reproduciendo: ${res.title}`);
+                        channel.send(`Ocurrió un error. Reproduciendo: ${res.title}`);
                     });
                     
-                    await interaction.reply('Reproduciendo ' + video.title);
+                    await interaction.reply('Reproduciendo ' + res.title);
                 }
                 else {
                     playlist.add(video.url, video.title);
