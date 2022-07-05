@@ -33,7 +33,3 @@ client.on('interactionCreate', async interaction => {
 });
 
 client.login(token);
-
-app.listen(port, () => {
-    console.log(`App listening at http://localhost:${port}`)
-})
