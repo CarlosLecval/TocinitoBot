@@ -1,6 +1,4 @@
 const { SlashCommandBuilder } = require('@discordjs/builders');
-const ytdl = require('ytdl-core');
-const ytSearch = require('yt-search');
 const {
     AudioPlayerStatus,
     StreamType,
@@ -10,6 +8,7 @@ const {
     VoiceConnection,
     getVoiceConnection,
 } = require('@discordjs/voice');
+const play = require('play-dl');
 const { Playlist, playlistMap } = require('../playlist');
 
 module.exports = {
@@ -26,10 +25,10 @@ module.exports = {
 
         const playlist = playlistMap.get(interaction.guild.id);
 
-        const getNextResource = () => {
+        const getNextResource = async () => {
             var current = playlist.pop();
-            const stream = ytdl(current.url, { filter: 'audioonly' });
-            const resource = createAudioResource(stream, { inputType: StreamType.Arbitrary });
+            let stream = await play.stream(current.url);
+            const resource = createAudioResource(stream.stream, { inputType: StreamType.Arbitrary });
             return {
                 resource: resource,
                 title: current.title,
@@ -48,15 +47,15 @@ module.exports = {
                 });
 
                 const player = createAudioPlayer();
-                var res = getNextResource();
+                var res = await getNextResource();
                 player.play(res.resource);
                 connection.subscribe(player);
 
 
-                player.on(AudioPlayerStatus.Idle, () => {
+                player.on(AudioPlayerStatus.Idle, async () => {
                     var channel = interaction.channel;
                     if (playlist.head) {
-                        var res = getNextResource();
+                        var res = await getNextResource();
                         player.play(res.resource);
                         channel.send(`Reproduciendo: ${res.title}`);
                     }
@@ -71,12 +70,12 @@ module.exports = {
                         }, 300000);
                     }
                 });
-                player.on('error', error => {
+                player.on('error', async error => {
                     var channel = interaction.channel;
                     console.error(`Error: ${error.message}`);
                     console.error(error);
                     if (playlist.head) {
-                        var res = getNextResource();
+                        var res = await getNextResource();
                         player.play(res.resource);
                         channel.send(`Ocurrió un error. Reproduciendo: ${res.title}`);
                     }
@@ -86,7 +85,7 @@ module.exports = {
             }
             else
             {
-                var res = getNextResource();
+                var res = await getNextResource();
                 con.state.subscription.player.play(res.resource);
                 await interaction.reply('Reproduciendo ' + res.title);
             }
