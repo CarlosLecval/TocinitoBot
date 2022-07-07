@@ -28,7 +28,7 @@ module.exports = {
         const getNextResource = async () => {
             var current = playlist.pop();
             let stream = await play.stream(current.url);
-            const resource = createAudioResource(stream.stream, { inputType: StreamType.Arbitrary });
+            const resource = createAudioResource(stream.stream, { inputType: stream.type });
             return {
                 resource: resource,
                 title: current.title,
