@@ -1,6 +1,5 @@
 const { SlashCommandBuilder } = require('@discordjs/builders');
-const ytdl = require('ytdl-core');
-const ytSearch = require('yt-search');
+const play = require('play-dl')
 const {
     AudioPlayerStatus,
     StreamType,
@@ -52,6 +51,7 @@ module.exports = {
             const video = await videoFinder(title);
             if (video)
             {
+                console.log(video);
                 var playlist = playlistMap.get(interaction.guild.id);
                 if (!playlist) {
                     playlistMap.set(interaction.guild.id, new Playlist(video.url, video.title));
@@ -62,12 +62,12 @@ module.exports = {
 
                 playlist = playlistMap.get(interaction.guild.id);
                 
-                const getNextResource = () => {
+                const getNextResource = async () => {
                     let id = interaction.guild.id;
                     let pl = playlistMap.get(id);
                     let current = pl.pop();
-                    const stream = ytdl(current.url, { filter: 'audioonly' });
-                    const resource = createAudioResource(stream, { inputType: StreamType.Arbitrary });
+                    let stream = await play.stream(current.url);
+                    const resource = createAudioResource(stream.stream, { inputType: stream.type });
                     return {
                         resource: resource,
                         title: current.title,
@@ -76,17 +76,17 @@ module.exports = {
 
                 if (!connection.state.subscription) {    
 
-                    let res = getNextResource();
+                    let res = await getNextResource();
                     
                     const player = createAudioPlayer();
                     player.play(res.resource);
                     connection.subscribe(player);
                     
-                    player.on(AudioPlayerStatus.Idle, () => {
+                    player.on(AudioPlayerStatus.Idle, async () => {
                         var id = interaction.guild.id;
                         var channel = interaction.channel;
                         if (playlist.head) {
-                            var res = getNextResource();
+                            var res = await getNextResource();
                             player.play(res.resource);
                             channel.send(`Reproduciendo: ${res.title}`);
                         }
@@ -101,12 +101,12 @@ module.exports = {
                             }, 300000);
                         }
                     });
-                    player.on('error', error => {
+                    player.on('error', async error => {
                         var channel = interaction.channel;
                         console.error(`Error: ${error.message}`);
                         console.log(error);
                         if (playlist.head) {
-                            var res = getNextResource();
+                            var res = await getNextResource();
                             player.play(res.resource);
                             channel.send(`Ocurrió un error. Reproduciendo: ${res.title}`);
                         }
@@ -116,7 +116,7 @@ module.exports = {
                 }
                 else if (connection.state.subscription.player.state.status != 'playing')
                 {
-                    let res = getNextResource();
+                    let res = await getNextResource();
                     connection.state.subscription.player.play(res.resource);
                     await interaction.reply('Reproduciendo ' + res.title);
                 }
@@ -132,7 +132,9 @@ module.exports = {
 };
 
 const videoFinder = async (query) => {
-    const videoResult = await ytSearch(query);
+    let yt_info = await play.search(query, {
+        limit: 1
+    });
 
-    return (videoResult.videos.length > 1) ? videoResult.videos[0] : null;
+    return yt_info[0] ? yt_info[0] : null;
 }
