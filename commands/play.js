@@ -54,23 +54,30 @@ module.exports = {
             {
                 var playlist = playlistMap.get(interaction.guild.id);
                 if (!playlist) {
-                    
                     playlistMap.set(interaction.guild.id, new Playlist(video.url, video.title));
+                }
+                else {
+                    playlist.add(video.url, video.title);
+                }
 
-                    playlist = playlistMap.get(interaction.guild.id);
+                playlist = playlistMap.get(interaction.guild.id);
+                
+                const getNextResource = () => {
+                    let id = interaction.guild.id;
+                    let pl = playlistMap.get(id);
+                    let current = pl.pop();
+                    const stream = ytdl(current.url, { filter: 'audioonly' });
+                    const resource = createAudioResource(stream, { inputType: StreamType.Arbitrary });
+                    return {
+                        resource: resource,
+                        title: current.title,
+                    };
+                }
+
+                if (!connection.state.subscription) {    
+
+                    let res = getNextResource();
                     
-                    const getNextResource = () => {
-                        var current = playlist.pop();
-                        const stream = ytdl(current.url, { filter: 'audioonly' });
-                        const resource = createAudioResource(stream, { inputType: StreamType.Arbitrary });
-                        return {
-                            resource: resource,
-                            title: current.title,
-                        };
-                    }
-
-                    var res = getNextResource();
-
                     const player = createAudioPlayer();
                     player.play(res.resource);
                     connection.subscribe(player);
@@ -91,22 +98,29 @@ module.exports = {
                                     connection.destroy();
                                     playlistMap.delete(interaction.guild.id);
                                 }
-                            }, 60000);
+                            }, 300000);
                         }
                     });
                     player.on('error', error => {
                         var channel = interaction.channel;
                         console.error(`Error: ${error.message}`);
                         console.log(error);
-                        var res = getNextResource();
-                        player.play(res.resource);
-                        channel.send(`Ocurrió un error. Reproduciendo: ${res.title}`);
+                        if (playlist.head) {
+                            var res = getNextResource();
+                            player.play(res.resource);
+                            channel.send(`Ocurrió un error. Reproduciendo: ${res.title}`);
+                        }
                     });
                     
                     await interaction.reply('Reproduciendo ' + res.title);
                 }
+                else if (connection.state.subscription.player.state.status != 'playing')
+                {
+                    let res = getNextResource();
+                    connection.state.subscription.player.play(res.resource);
+                    await interaction.reply('Reproduciendo ' + res.title);
+                }
                 else {
-                    playlist.add(video.url, video.title);
                     await interaction.reply('Añadido a la lista ' + video.title);
                 }
             }

@@ -68,16 +68,18 @@ module.exports = {
                                 connection.destroy();
                                 playlistMap.delete(interaction.guild.id);
                             }
-                        }, 60000);
+                        }, 300000);
                     }
                 });
                 player.on('error', error => {
                     var channel = interaction.channel;
                     console.error(`Error: ${error.message}`);
                     console.error(error);
-                    var res = getNextResource();
-                    player.play(res.resource);
-                    channel.send(`Ocurrió un error. Reproduciendo: ${res.title}`);
+                    if (playlist.head) {
+                        var res = getNextResource();
+                        player.play(res.resource);
+                        channel.send(`Ocurrió un error. Reproduciendo: ${res.title}`);
+                    }
                 });
 
                 await interaction.reply('Reproduciendo ' + res.title);
