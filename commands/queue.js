@@ -32,7 +32,6 @@ module.exports = {
             var output = "";
             var temp = playlist.head
             while(temp != null) {
-                console.log(temp)
                 output += `- ${temp.title}\n`;
                 temp = temp.next;
             }

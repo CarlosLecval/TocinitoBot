@@ -62,15 +62,19 @@ module.exports = {
                     }
                     else {
                         setTimeout(() => {
-                            player.stop();
-                            connection.destroy();
-                            playlistMap.delete(interaction.guild.id);
-                        }, 300000);
+                            const con = getVoiceConnection(id);
+                            if (con.state.subscription.player.state.status != 'playing') {
+                                player.stop();
+                                connection.destroy();
+                                playlistMap.delete(interaction.guild.id);
+                            }
+                        }, 60000);
                     }
                 });
                 player.on('error', error => {
                     var channel = interaction.channel;
-                    console.error(`Error: ${error.message} with resource ${error.resource.metadata.title}`);
+                    console.error(`Error: ${error.message}`);
+                    console.error(error);
                     var res = getNextResource();
                     player.play(res.resource);
                     channel.send(`Ocurrió un error. Reproduciendo: ${res.title}`);
