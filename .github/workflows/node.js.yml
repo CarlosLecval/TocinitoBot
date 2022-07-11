@@ -13,7 +13,6 @@ jobs:
   build:
 
     runs-on: self-hosted
-
     strategy:
       matrix:
         node-version: [18.x]
@@ -26,6 +25,12 @@ jobs:
       with:
         node-version: ${{ matrix.node-version }}
         cache: 'npm'
+    - run: |
+          touch .env
+          echo TOKEN=${{ secrets.TOKEN }} >> .env
+          echo CLIENT_ID=${{ secrets.CLIENT_ID }} >> .env
+          echo GUILD_ID=${{ secrets.GUILD_ID }} >> .env
+          cat .env
     - run: npm i
     - run: npm run deploy
     - run: pm2 restart tocinitobot

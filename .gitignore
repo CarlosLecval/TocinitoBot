@@ -131,9 +131,6 @@ dist
 .yarn/install-state.gz
 .pnp.*
 
-# Config
-config.json
-
 # Files and directories
 photos/
 test.js
