@@ -13,6 +13,12 @@ jobs:
   build:
 
     runs-on: self-hosted
+
+    env:
+      TOKEN: ${{ secrets.TOKEN }}
+      CLIENT_ID: ${{ secrets.CLIENT_ID }}
+      GUILD_ID: ${{ secrets.GUILD_ID }}
+
     strategy:
       matrix:
         node-version: [18.x]
@@ -27,9 +33,9 @@ jobs:
         cache: 'npm'
     - run: |
           touch .env
-          echo TOKEN=${{ secrets.TOKEN }} >> .env
-          echo CLIENT_ID=${{ secrets.CLIENT_ID }} >> .env
-          echo GUILD_ID=${{ secrets.GUILD_ID }} >> .env
+          echo TOKEN=$TOKEN >> .env
+          echo CLIENT_ID=$CLIENT_ID >> .env
+          echo GUILD_ID=$GUILD_ID >> .env
           cat .env
     - run: npm i
     - run: npm run deploy
