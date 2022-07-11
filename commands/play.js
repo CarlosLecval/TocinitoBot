@@ -16,8 +16,8 @@ module.exports = {
         .setName('play')
         .setDescription('Reproduce canción')
         .addStringOption(option =>
-            option.setName('title')
-                .setDescription('title')
+            option.setName('input')
+                .setDescription('input')
                 .setRequired(false)),
     async execute(interaction) {
         const voiceChannel = interaction.member.voice.channel;
@@ -36,7 +36,7 @@ module.exports = {
             });
         }
 
-        var title = interaction.options.getString('title');
+        var title = interaction.options.getString('input');
         
         if (!title) {
             if (connection.state.subscription.player.state.status == 'paused') {
