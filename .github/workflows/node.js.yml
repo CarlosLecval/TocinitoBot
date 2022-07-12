@@ -18,6 +18,9 @@ jobs:
       TOKEN: ${{ secrets.TOKEN }}
       CLIENT_ID: ${{ secrets.CLIENT_ID }}
       GUILD_ID: ${{ secrets.GUILD_ID }}
+      SPOTIFY_CLIENT_ID: ${{ secrets.SPOTIFY_CLIENT_ID }}
+      SPOTIFY_CLIENT_SECRET: ${{ secrets.SPOTIFY_CLIENT_SECRET }}
+      SPOTIFY_REFRESH_TOKEN: ${{ secrets.SPOTIFY_REFRESH_TOKEN }}
 
     strategy:
       matrix:
@@ -36,7 +39,9 @@ jobs:
           echo TOKEN=$TOKEN >> .env
           echo CLIENT_ID=$CLIENT_ID >> .env
           echo GUILD_ID=$GUILD_ID >> .env
-          cat .env
+          echo SPOTIFY_CLIENT_ID=$SPOTIFY_CLIENT_ID
+          echo SPOTIFY_CLIENT_SECRET=$SPOTIFY_CLIENT_SECRET
+          echo SPOTIFY_REFRESH_TOKEN=$SPOTIFY_REFRESH_TOKEN
     - run: npm i
     - run: npm run deploy
     - run: pm2 restart tocinitobot

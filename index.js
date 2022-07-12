@@ -1,6 +1,27 @@
 const fs = require('fs');
 const { Client, Collection, Intents } = require('discord.js');
-require('dotenv').config()
+const play = require('play-dl');
+require('dotenv').config();
+
+var setTokens = async () => {
+    await play.setToken({
+        spotify: {
+            client_id: process.env.SPOTIFY_CLIENT_ID,
+            client_secret: process.env.SPOTIFY_CLIENT_SECRET,
+            refresh_token: process.env.SPOTIFY_REFRESH_TOKEN,
+            market: 'MX'
+        }
+    })
+    play.getFreeClientID().then((clientID) => {
+        play.setToken({
+            soundcloud: {
+                client_id: clientID
+            }
+        });
+    });
+}
+
+setTokens();
 
 const client = new Client({ intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_VOICE_STATES] });
 

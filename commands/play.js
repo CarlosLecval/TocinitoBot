@@ -48,7 +48,29 @@ module.exports = {
             }
         }
         else {
-            const video = await videoFinder(title);
+            var isURL = isValidUrl(title);
+            var video = null;
+            var title = interaction.options.getString('input');
+            var isURL = isValidUrl(title);
+            var video = null;
+            switch (isURL) {
+                case 'open.spotify.com':
+                    if (play.is_expired()) {
+                        await play.refreshToken()
+                    }
+                    let sp_data = await play.spotify(title);
+                    video = await videoFinder(`${sp_data.name} - ${sp_data.artists[0].name}`);
+                    break;
+                case 'soundcloud.com':
+                    let so_data = await play.soundcloud(title);
+                    video = {
+                        url: title,
+                        title: so_data.name
+                    };
+                    break;
+                default:
+                    video = await videoFinder(title);
+            }
             if (video)
             {
                 console.log(video);
@@ -137,4 +159,16 @@ const videoFinder = async (query) => {
     });
 
     return yt_info[0] ? yt_info[0] : null;
+}
+
+function isValidUrl(string) {
+    let url;
+
+    try {
+        url = new URL(string);
+    } catch (_) {
+        return false;
+    }
+
+    return url.hostname;
 }
