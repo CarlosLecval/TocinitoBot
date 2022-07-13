@@ -36,8 +36,8 @@ module.exports = {
             });
         }
 
+        var channel = interaction.channel;
         var title = interaction.options.getString('input');
-        
         if (!title) {
             if (connection.state.subscription.player.state.status == 'paused') {
                 connection.state.subscription.player.unpause();
@@ -49,41 +49,79 @@ module.exports = {
         }
         else {
             var isURL = isValidUrl(title);
-            var video = null;
-            var title = interaction.options.getString('input');
-            var isURL = isValidUrl(title);
-            var video = null;
+            var video = [];
             switch (isURL) {
                 case 'open.spotify.com':
                     if (play.is_expired()) {
                         await play.refreshToken()
                     }
                     let sp_data = await play.spotify(title);
-                    video = await videoFinder(`${sp_data.name} - ${sp_data.artists[0].name}`);
+                    if (sp_data.type == 'track') {
+                        let vid = await videoFinder(`${sp_data.name} - ${sp_data.artists[0].name}`);
+                        if (vid) {
+                            video.push(vid);
+                        }
+                    }
+                    else {
+                        var songs = sp_data.fetched_tracks.get("1");
+                        for (var i = 0; i < songs.length; i++) {
+                            let vid = await videoFinder(`${songs[i].name} - ${songs[i].artists[0].name}`);
+                            if (vid) {
+                                video.push(vid);
+                            }
+                        }
+                    }
                     break;
                 case 'soundcloud.com':
                     let so_data = await play.soundcloud(title);
-                    video = {
-                        url: title,
-                        title: so_data.name
-                    };
+                    if (so_data.type == 'track') {
+                        let vid = {
+                            url: title,
+                            title: so_data.name
+                        };
+                        if (vid) {
+                            video.push(vid);
+                        }
+                    }
+                    else {
+                        var songs = so_data.tracks;
+                        for (var i = 0; i < so_data.tracksCount; i++) {
+                            if (songs[i].fetched) {
+                                let vid = {
+                                    url: songs[i].permalink,
+                                    title: songs[i].name
+                                };
+                                video.push(vid);
+                            }
+                        }
+                    }
                     break;
                 default:
-                    video = await videoFinder(title);
+                    let vid = await videoFinder(title);
+                    if (vid) {
+                        video.push(vid);
+                    }
             }
-            if (video)
-            {
-                console.log(video);
-                var playlist = playlistMap.get(interaction.guild.id);
-                if (!playlist) {
-                    playlistMap.set(interaction.guild.id, new Playlist(video.url, video.title));
+            if (video) {
+                for (var i = 0; i < video.length; i++) {
+                    let playlist = playlistMap.get(interaction.guild.id);
+                    if (!playlist) {
+                        playlistMap.set(interaction.guild.id, new Playlist(video[i].url, video[i].title));
+                    }
+                    else {
+                        playlist.add(video[i].url, video[i].title);
+                    }
                 }
-                else {
-                    playlist.add(video.url, video.title);
+                if (video.length > 1) {
+                    await interaction.reply('Añadido a la lista ' + video.length + ' canciones');
+                }
+                else if (video.length < 1) {
+                    await interaction.reply('No se ha encontrado ninguna canción');
+                    return;
                 }
 
-                playlist = playlistMap.get(interaction.guild.id);
-                
+                var playlist = playlistMap.get(interaction.guild.id);
+
                 const getNextResource = async () => {
                     let id = interaction.guild.id;
                     let pl = playlistMap.get(id);
@@ -96,54 +134,52 @@ module.exports = {
                     };
                 }
 
-                if (!connection.state.subscription) {    
+                if (!connection.state.subscription || connection.state.subscription.player.state.status != 'playing') {
+                    let res = await getNextResource();
+                    if (!connection.state.subscription) {
+                        var player = createAudioPlayer();
+                        connection.subscribe(player);
 
-                    let res = await getNextResource();
-                    
-                    const player = createAudioPlayer();
+                        player.on(AudioPlayerStatus.Idle, async () => {
+                            var id = interaction.guild.id;
+                            var channel = interaction.channel;
+                            if (playlist.head) {
+                                var res = await getNextResource();
+                                player.play(res.resource);
+                                channel.send(`Reproduciendo: ${res.title}`);
+                            }
+                            else {
+                                setTimeout(() => {
+                                    const con = getVoiceConnection(id);
+                                    if (con.state.subscription.player.state.status != 'playing') {
+                                        player.stop();
+                                        connection.destroy();
+                                        playlistMap.delete(interaction.guild.id);
+                                    }
+                                }, 300000);
+                            }
+                        });
+                        player.on('error', async error => {
+                            var channel = interaction.channel;
+                            console.error(`Error: ${error.message}`);
+                            console.log(error);
+                            if (playlist.head) {
+                                var res = await getNextResource();
+                                player.play(res.resource);
+                                channel.send(`Ocurrió un error. Reproduciendo: ${res.title}`);
+                            }
+                        });
+                    }
+                    else {
+                        var player = connection.state.subscription.player
+                    }
                     player.play(res.resource);
-                    connection.subscribe(player);
-                    
-                    player.on(AudioPlayerStatus.Idle, async () => {
-                        var id = interaction.guild.id;
-                        var channel = interaction.channel;
-                        if (playlist.head) {
-                            var res = await getNextResource();
-                            player.play(res.resource);
-                            channel.send(`Reproduciendo: ${res.title}`);
-                        }
-                        else {
-                            setTimeout(() => {
-                                const con = getVoiceConnection(id);
-                                if (con.state.subscription.player.state.status != 'playing') {
-                                    player.stop();
-                                    connection.destroy();
-                                    playlistMap.delete(interaction.guild.id);
-                                }
-                            }, 300000);
-                        }
-                    });
-                    player.on('error', async error => {
-                        var channel = interaction.channel;
-                        console.error(`Error: ${error.message}`);
-                        console.log(error);
-                        if (playlist.head) {
-                            var res = await getNextResource();
-                            player.play(res.resource);
-                            channel.send(`Ocurrió un error. Reproduciendo: ${res.title}`);
-                        }
-                    });
-                    
-                    await interaction.reply('Reproduciendo ' + res.title);
-                }
-                else if (connection.state.subscription.player.state.status != 'playing')
-                {
-                    let res = await getNextResource();
-                    connection.state.subscription.player.play(res.resource);
-                    await interaction.reply('Reproduciendo ' + res.title);
+                    await channel.send('Reproduciendo ' + res.title);
                 }
                 else {
-                    await interaction.reply('Añadido a la lista ' + video.title);
+                    if (video.length == 1) {
+                        await interaction.reply('Añadido a la lista ' + video[0].title);
+                    }
                 }
             }
             else {
