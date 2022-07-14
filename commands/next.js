@@ -15,7 +15,7 @@ module.exports = {
     data: new SlashCommandBuilder()
         .setName('next')
         .setDescription('Siguiente canción'),
-    async execute(interaction) {
+    async execute(interaction, args) {
         const voiceChannel = interaction.member.voice.channel;
 
         if (!voiceChannel) {

@@ -15,7 +15,7 @@ module.exports = {
     data: new SlashCommandBuilder()
         .setName('queue')
         .setDescription('Lista de canciones'),
-    async execute(interaction) {
+    async execute(interaction, args) {
         const voiceChannel = interaction.member.voice.channel;
 
         if (!voiceChannel) {

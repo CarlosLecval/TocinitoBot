@@ -19,7 +19,7 @@ module.exports = {
             option.setName('input')
                 .setDescription('input')
                 .setRequired(false)),
-    async execute(interaction) {
+    async execute(interaction, args) {
         const voiceChannel = interaction.member.voice.channel;
 
         if (!voiceChannel) {
@@ -37,7 +37,8 @@ module.exports = {
         }
 
         var channel = interaction.channel;
-        var title = interaction.options.getString('input');
+        var title = interaction.options ? interaction.options.getString('input') : args.length > 0 ? args.join(" ") : null;
+
         if (!title) {
             if (connection.state.subscription.player.state.status == 'paused') {
                 connection.state.subscription.player.unpause();
