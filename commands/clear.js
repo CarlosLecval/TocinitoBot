@@ -14,7 +14,7 @@ module.exports = {
     data: new SlashCommandBuilder()
         .setName('clear')
         .setDescription('Limpia la lista de reproducción'),
-    async execute(interaction) {
+    async execute(interaction, args) {
         const voiceChannel = interaction.member.voice.channel;
 
         if (!voiceChannel) {

@@ -14,7 +14,7 @@ module.exports = {
     data: new SlashCommandBuilder()
         .setName('pause')
         .setDescription('Pausa canción'),
-    async execute(interaction) {
+    async execute(interaction, args) {
         const voiceChannel = interaction.member.voice.channel;
 
         if (!voiceChannel) {

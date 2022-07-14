@@ -1,7 +1,9 @@
 const fs = require('fs');
-const { Client, Collection, Intents } = require('discord.js');
+const { Client, Collection, Intents, GuildMemberManager } = require('discord.js');
 const play = require('play-dl');
 require('dotenv').config();
+
+var prefix = '-';
 
 var setTokens = async () => {
     await play.setToken({
@@ -23,7 +25,7 @@ var setTokens = async () => {
 
 setTokens();
 
-const client = new Client({ intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_VOICE_STATES] });
+const client = new Client({ intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_VOICE_STATES, Intents.FLAGS.GUILD_MESSAGES] });
 
 
 client.commands = new Collection();
@@ -46,7 +48,27 @@ client.on('interactionCreate', async interaction => {
     if (!command) return;
 
     try {
-        await command.execute(interaction);
+        await command.execute(interaction, null);
+    } catch (error) {
+        console.error(error);
+        await interaction.reply({ content: 'There was an error while executing this command!', ephemeral: true });
+    }
+});
+
+client.on("messageCreate", async message => {
+    if (message.author.bot) return;
+
+    if (message.content.indexOf(prefix) !== 0) return;
+
+    const args = message.content.slice(prefix.length).trim().split(/ +/g);
+    const commandName = args.shift().toLowerCase();
+
+    const command = client.commands.get(commandName);
+
+    if (!command) return;
+
+    try {
+        await command.execute(message, args);
     } catch (error) {
         console.error(error);
         await interaction.reply({ content: 'There was an error while executing this command!', ephemeral: true });
