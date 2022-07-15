@@ -1,15 +1,24 @@
-const { SlashCommandBuilder } = require('@discordjs/builders');
+const {
+    SlashCommandBuilder,
+    bold,
+    italic,
+    strikethrough,
+    underscore,
+    spoiler,
+    quote,
+    blockQuote,
+    hyperlink
+} = require('@discordjs/builders');
 const {
     AudioPlayerStatus,
-    StreamType,
     createAudioPlayer,
     createAudioResource,
     joinVoiceChannel,
-    VoiceConnection,
     getVoiceConnection,
 } = require('@discordjs/voice');
 const play = require('play-dl');
 const { Playlist, playlistMap } = require('../playlist');
+const { MessageEmbed } = require('discord.js');
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -32,6 +41,8 @@ module.exports = {
             return {
                 resource: resource,
                 title: current.title,
+                thumbnail: current.thumbnail,
+                url: current.url
             };
         }
 
@@ -57,7 +68,11 @@ module.exports = {
                     if (playlist.head) {
                         var res = await getNextResource();
                         player.play(res.resource);
-                        channel.send(`Reproduciendo: ${res.title}`);
+                        let embed = new MessageEmbed()
+                            .setColor('#0099ff')
+                            .setDescription('Reproduciendo ' + hyperlink(res.title, res.url))
+                            .setThumbnail(res.thumbnail)
+                        channel.send({ embeds: [embed] });
                     }
                     else {
                         setTimeout(() => {
@@ -77,22 +92,37 @@ module.exports = {
                     if (playlist.head) {
                         var res = await getNextResource();
                         player.play(res.resource);
-                        channel.send(`Ocurrió un error. Reproduciendo: ${res.title}`);
+                        let embed = new MessageEmbed()
+                            .setColor('#de3826')
+                            .setDescription(`Ocurrió un error. Reproduciendo: ${hyperlink(res.title, res.url)}`)
+                            .setThumbnail(res.thumbnail)
+                        channel.send({ embeds: [embed] });
                     }
                 });
 
-                await interaction.reply('Reproduciendo ' + res.title);
+                let embed = new MessageEmbed()
+                    .setColor('#0099ff')
+                    .setDescription('Reproduciendo ' + hyperlink(res.title, res.url))
+                    .setThumbnail(res.thumbnail)
+                await interaction.reply({ embeds: [embed] });
             }
             else
             {
                 var res = await getNextResource();
                 con.state.subscription.player.play(res.resource);
-                await interaction.reply('Reproduciendo ' + res.title);
+                let embed = new MessageEmbed()
+                    .setColor('#0099ff')
+                    .setDescription('Reproduciendo ' + hyperlink(res.title, res.url))
+                    .setThumbnail(res.thumbnail)
+                await interaction.reply({ embeds: [embed] });
             }
         }
         else
         {
-            await interaction.reply('No hay canciones en la lista');
+            let embed = new MessageEmbed()
+                .setColor('#de3826')
+                .setDescription('No hay canciones en la lista')
+            await interaction.reply({ embeds: [embed] });
         }
     },
 };

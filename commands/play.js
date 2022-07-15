@@ -1,14 +1,23 @@
-const { SlashCommandBuilder } = require('@discordjs/builders');
+const { 
+    SlashCommandBuilder,
+    bold, 
+    italic,
+    strikethrough,
+    underscore,
+    spoiler,
+    quote,
+    blockQuote,  
+    hyperlink 
+} = require('@discordjs/builders');
 const play = require('play-dl')
 const {
     AudioPlayerStatus,
-    StreamType,
     createAudioPlayer,
     createAudioResource,
     joinVoiceChannel,
-    VoiceConnection,
     getVoiceConnection,
 } = require('@discordjs/voice');
+const { MessageEmbed } = require('discord.js');
 const { Playlist, playlistMap } = require('../playlist');
 
 module.exports = {
@@ -23,7 +32,10 @@ module.exports = {
         const voiceChannel = interaction.member.voice.channel;
 
         if (!voiceChannel) {
-            await interaction.reply('No estás en un canal de voz');
+            let embed = new MessageEmbed()
+                .setColor('#de3826')
+                .setDescription('No estás en un canal de voz')
+            await interaction.reply({ embeds: [embed] });
             return;
         }
 
@@ -78,7 +90,8 @@ module.exports = {
                     if (so_data.type == 'track') {
                         let vid = {
                             url: title,
-                            title: so_data.name
+                            title: so_data.name,
+                            thumbnails: [so_data.thumbnail]
                         };
                         if (vid) {
                             video.push(vid);
@@ -90,7 +103,8 @@ module.exports = {
                             if (songs[i].fetched) {
                                 let vid = {
                                     url: songs[i].permalink,
-                                    title: songs[i].name
+                                    title: songs[i].name,
+                                    thumbnails: [so_data.thumbnail]
                                 };
                                 video.push(vid);
                             }
@@ -107,17 +121,23 @@ module.exports = {
                 for (var i = 0; i < video.length; i++) {
                     let playlist = playlistMap.get(interaction.guild.id);
                     if (!playlist) {
-                        playlistMap.set(interaction.guild.id, new Playlist(video[i].url, video[i].title));
+                        playlistMap.set(interaction.guild.id, new Playlist(video[i].url, video[i].title, video[i].thumbnails[0].url));
                     }
                     else {
-                        playlist.add(video[i].url, video[i].title);
+                        playlist.add(video[i].url, video[i].title, video[i].thumbnails[0].url);
                     }
                 }
                 if (video.length > 1) {
-                    await interaction.reply('Añadido a la lista ' + video.length + ' canciones');
+                    let embed = new MessageEmbed()
+                        .setColor('#26de41')
+                        .setDescription('Añadidas a la lista ' + bold(video.length.toString()) + ' canciones')
+                    await interaction.reply({ embeds: [embed] });
                 }
                 else if (video.length < 1) {
-                    await interaction.reply('No se ha encontrado ninguna canción');
+                    let embed = new MessageEmbed()
+                    .setColor('#de3826')
+                    .setDescription('No se ha encontrado ninguna canción')
+                    await interaction.reply({ embeds: [embed] });
                     return;
                 }
 
@@ -132,6 +152,8 @@ module.exports = {
                     return {
                         resource: resource,
                         title: current.title,
+                        url: current.url,
+                        thumbnail: current.thumbnail
                     };
                 }
 
@@ -147,7 +169,11 @@ module.exports = {
                             if (playlist.head) {
                                 var res = await getNextResource();
                                 player.play(res.resource);
-                                channel.send(`Reproduciendo: ${res.title}`);
+                                let embed = new MessageEmbed()
+                                    .setColor('#0099ff')
+                                    .setDescription('Reproduciendo ' + hyperlink(res.title, res.url))
+                                    .setThumbnail(res.thumbnail)
+                                channel.send({ embeds: [embed] });
                             }
                             else {
                                 setTimeout(() => {
@@ -163,11 +189,14 @@ module.exports = {
                         player.on('error', async error => {
                             var channel = interaction.channel;
                             console.error(`Error: ${error.message}`);
-                            console.log(error);
                             if (playlist.head) {
                                 var res = await getNextResource();
                                 player.play(res.resource);
-                                channel.send(`Ocurrió un error. Reproduciendo: ${res.title}`);
+                                let embed = new MessageEmbed()
+                                    .setColor('#de3826')
+                                    .setDescription(`Ocurrió un error. Reproduciendo: ${hyperlink(res.title, res.url) }`)
+                                    .setThumbnail(res.thumbnail)
+                                channel.send({ embeds: [embed] });
                             }
                         });
                     }
@@ -175,16 +204,27 @@ module.exports = {
                         var player = connection.state.subscription.player
                     }
                     player.play(res.resource);
-                    await channel.send('Reproduciendo ' + res.title);
+                    let embed = new MessageEmbed()
+                        .setColor('#0099ff')
+                        .setDescription('Reproduciendo ' + hyperlink(res.title, res.url))
+                        .setThumbnail(res.thumbnail)
+                    channel.send({ embeds: [embed] });
                 }
                 else {
                     if (video.length == 1) {
-                        await interaction.reply('Añadido a la lista ' + video[0].title);
+                        let embed = new MessageEmbed()
+                            .setColor('#26de41')
+                            .setDescription('Añadido a la lista ' + hyperlink(video[0].title, video[0].url))
+                            .setThumbnail(video[0].thumbnails[0].url)
+                        channel.send({ embeds: [embed] });
                     }
                 }
             }
             else {
-                await interaction.reply('No se ha podido reproducir');
+                let embed = new MessageEmbed()
+                    .setColor('#de3826')
+                    .setDescription('No se ha encontrado ninguna canción')
+                await interaction.reply({ embeds: [embed] });
             }
         }
     },

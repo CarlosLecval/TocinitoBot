@@ -1,14 +1,14 @@
 class Playlist {
-    constructor(url, title)
+    constructor(url, title, thumbnail)
     {
-        var temp = new Song(url, title, null);
+        var temp = new Song(url, title, thumbnail, null);
         this.head = temp
         this.last = temp
     }
 
-    add(url, title)
+    add(url, title, thumbnail)
     {
-        var node = new Song(url, title, null);
+        var node = new Song(url, title, thumbnail, null);
         if(this.head == null)
         {
             this.head = node;
@@ -51,11 +51,12 @@ class Playlist {
 }
 
 class Song {
-    constructor(url, title, next) 
+    constructor(url, title, thumbnail, next) 
     {
         this.url = url;
         this.next = next;
         this.title = title;
+        this.thumbnail = thumbnail;
     }
 }
 
