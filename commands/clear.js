@@ -1,4 +1,14 @@
-const { SlashCommandBuilder } = require('@discordjs/builders');
+const {
+    SlashCommandBuilder,
+    bold,
+    italic,
+    strikethrough,
+    underscore,
+    spoiler,
+    quote,
+    blockQuote,
+    hyperlink
+} = require('@discordjs/builders');
 const {
     AudioPlayerStatus,
     StreamType,
@@ -8,6 +18,7 @@ const {
     VoiceConnection,
     getVoiceConnection,
 } = require('@discordjs/voice');
+const { MessageEmbed } = require('discord.js');
 const { Playlist, playlistMap } = require('../playlist');
 
 module.exports = {
@@ -18,28 +29,31 @@ module.exports = {
         const voiceChannel = interaction.member.voice.channel;
 
         if (!voiceChannel) {
-            await interaction.reply('No estás en un canal de voz');
+            let embed = new MessageEmbed()
+                .setColor('#de3826')
+                .setDescription('No estás en un canal de voz')
+            await interaction.reply({ embeds: [embed] });
             return;
         }
-
+        
         const playlist = playlistMap.get(interaction.guild.id);
         const con = getVoiceConnection(interaction.guild.id);
         if (con) {
-            if (playlist && playlist.head != null) {
+            try {
                 playlist.clear();
                 con.state.subscription.player.stop();
-                await interaction.reply('Lista de reproducción limpia');
             }
-            else if (con.state.subscription.player.state.status == 'playing') {
-                con.state.subscription.player.stop();
-                await interaction.reply('Lista de reproducción limpia');
-            }
-            else {
-                await interaction.reply('No hay nada en la lista de reproducción');
-            }
+            catch (error) {}
+            let embed = new MessageEmbed()
+            .setColor('#26de41')
+            .setDescription('Lista de reproducción limpia')
+            await interaction.reply({ embeds: [embed] });
         }
         else {
-            await interaction.reply('tocinitobot no está en un canal de voz');
+            let embed = new MessageEmbed()
+                .setColor('#de3826')
+                .setDescription('Tocinito no está en un canal de voz')
+            await interaction.reply({ embeds: [embed] });
         }
     },
 };
