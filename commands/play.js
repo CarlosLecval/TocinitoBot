@@ -52,12 +52,26 @@ module.exports = {
         var title = interaction.options ? interaction.options.getString('input') : args.length > 0 ? args.join(" ") : null;
 
         if (!title) {
-            if (connection.state.subscription.player.state.status == 'paused') {
-                connection.state.subscription.player.unpause();
-                await interaction.reply('Reproduciendo');
+            if (connection.state.subscription){
+                if (connection.state.subscription.player.state.status == 'paused') {
+                    connection.state.subscription.player.unpause();
+                    let embed = new MessageEmbed()
+                        .setColor('#0099ff')
+                        .setDescription('Canción resumida')
+                    await interaction.reply({ embeds: [embed] });
+                }
+                else {
+                    let embed = new MessageEmbed()
+                        .setColor('#0099ff')
+                        .setDescription('La música ya está sonando')
+                    await interaction.reply({ embeds: [embed] });
+                }
             }
             else {
-                await interaction.reply('N0');
+                let embed = new MessageEmbed()
+                    .setColor('#0099ff')
+                    .setDescription('No hay nada en reproducción')
+                await interaction.reply({ embeds: [embed] });
             }
         }
         else {
