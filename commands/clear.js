@@ -20,19 +20,20 @@ const {
 } = require('@discordjs/voice');
 const { MessageEmbed } = require('discord.js');
 const { Playlist, playlistMap } = require('../playlist');
+const { send } = require('../utils');
 
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('clear')
         .setDescription('Limpia la lista de reproducción'),
-    async execute(interaction, args) {
+    async execute(interaction, args, slash) {
         const voiceChannel = interaction.member.voice.channel;
 
         if (!voiceChannel) {
             let embed = new MessageEmbed()
                 .setColor('#de3826')
                 .setDescription('No estás en un canal de voz')
-            await interaction.reply({ embeds: [embed] });
+            send(interaction, embed, slash);
             return;
         }
         
@@ -47,13 +48,13 @@ module.exports = {
             let embed = new MessageEmbed()
             .setColor('#26de41')
             .setDescription('Lista de reproducción limpia')
-            await interaction.reply({ embeds: [embed] });
+            send(interaction, embed, slash);
         }
         else {
             let embed = new MessageEmbed()
-                .setColor('#de3826')
-                .setDescription('Tocinito no está en un canal de voz')
-            await interaction.reply({ embeds: [embed] });
+            .setColor('#de3826')
+            .setDescription('Tocinito no está en un canal de voz')
+            send(interaction, embed, slash);
         }
     },
 };

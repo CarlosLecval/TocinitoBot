@@ -28,14 +28,15 @@ module.exports = {
             option.setName('input')
                 .setDescription('input')
                 .setRequired(false)),
-    async execute(interaction, args) {
+    async execute(interaction, args, slash) {
+        if (slash) await interaction.deferReply();
         const voiceChannel = interaction.member.voice.channel;
 
         if (!voiceChannel) {
             let embed = new MessageEmbed()
                 .setColor('#de3826')
                 .setDescription('No estás en un canal de voz')
-            await interaction.reply({ embeds: [embed] });
+            send(interaction, embed, slash);
             return;
         }
 
@@ -58,20 +59,20 @@ module.exports = {
                     let embed = new MessageEmbed()
                         .setColor('#0099ff')
                         .setDescription('Canción resumida')
-                    await interaction.reply({ embeds: [embed] });
+                    send(interaction, embed, slash);
                 }
                 else {
                     let embed = new MessageEmbed()
                         .setColor('#0099ff')
                         .setDescription('La música ya está sonando')
-                    await interaction.reply({ embeds: [embed] });
+                    send(interaction, embed, slash);
                 }
             }
             else {
                 let embed = new MessageEmbed()
                     .setColor('#0099ff')
                     .setDescription('No hay nada en reproducción')
-                await interaction.reply({ embeds: [embed] });
+                send(interaction, embed, slash);
             }
         }
         else {
@@ -164,13 +165,14 @@ module.exports = {
                     let embed = new MessageEmbed()
                         .setColor('#26de41')
                         .setDescription('Añadidas a la lista ' + bold(video.length.toString()) + ' canciones')
-                    await interaction.reply({ embeds: [embed] });
+                    send(interaction, embed, slash);
+                    slash = false;
                 }
                 else if (video.length < 1) {
                     let embed = new MessageEmbed()
-                    .setColor('#de3826')
-                    .setDescription('No se ha encontrado ninguna canción')
-                    await interaction.reply({ embeds: [embed] });
+                        .setColor('#de3826')
+                        .setDescription('No se ha encontrado ninguna canción')
+                    send(interaction, embed, slash);
                     return;
                 }
 
@@ -241,7 +243,7 @@ module.exports = {
                         .setColor('#0099ff')
                         .setDescription('Reproduciendo ' + hyperlink(res.title, res.url))
                         .setThumbnail(res.thumbnail)
-                    channel.send({ embeds: [embed] });
+                    send(interaction, embed, slash);
                 }
                 else {
                     if (video.length == 1) {
@@ -249,7 +251,7 @@ module.exports = {
                             .setColor('#26de41')
                             .setDescription('Añadido a la lista ' + hyperlink(video[0].title, video[0].url))
                             .setThumbnail(video[0].thumbnails[0].url)
-                        channel.send({ embeds: [embed] });
+                        send(interaction, embed, slash);
                     }
                 }
             }
@@ -262,6 +264,10 @@ module.exports = {
         }
     },
 };
+
+const send = (interaction, embed, slash) => {
+    slash ? interaction.editReply({ embeds: [embed] }) : interaction.channel.send({ embeds: [embed] });
+}
 
 const videoFinder = async (query) => {
     let yt_info = await play.search(query, {

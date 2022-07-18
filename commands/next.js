@@ -19,16 +19,20 @@ const {
 const play = require('play-dl');
 const { Playlist, playlistMap } = require('../playlist');
 const { MessageEmbed } = require('discord.js');
+const { send } = require('../utils');
 
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('next')
         .setDescription('Siguiente canción'),
-    async execute(interaction, args) {
+    async execute(interaction, args, slash) {
         const voiceChannel = interaction.member.voice.channel;
 
         if (!voiceChannel) {
-            await interaction.reply('No estás en un canal de voz');
+            let embed = new MessageEmbed()
+                .setColor('#de3826')
+                .setDescription('No estás en un canal de voz')
+            send(interaction, embed, slash);
             return;
         }
 
@@ -64,7 +68,7 @@ module.exports = {
 
 
                 player.on(AudioPlayerStatus.Idle, async () => {
-                    var channel = interaction.channel;
+                    let interact = interaction;
                     if (playlist.head) {
                         var res = await getNextResource();
                         player.play(res.resource);
@@ -72,7 +76,7 @@ module.exports = {
                             .setColor('#0099ff')
                             .setDescription('Reproduciendo ' + hyperlink(res.title, res.url))
                             .setThumbnail(res.thumbnail)
-                        channel.send({ embeds: [embed] });
+                        send(interact, embed, false);
                     }
                     else {
                         setTimeout(() => {
@@ -86,7 +90,7 @@ module.exports = {
                     }
                 });
                 player.on('error', async error => {
-                    var channel = interaction.channel;
+                    let interact = interaction;
                     console.error(`Error: ${error.message}`);
                     console.error(error);
                     if (playlist.head) {
@@ -96,7 +100,7 @@ module.exports = {
                             .setColor('#de3826')
                             .setDescription(`Ocurrió un error. Reproduciendo: ${hyperlink(res.title, res.url)}`)
                             .setThumbnail(res.thumbnail)
-                        channel.send({ embeds: [embed] });
+                        send(interact, embed, false);
                     }
                 });
 
@@ -114,7 +118,8 @@ module.exports = {
                     .setColor('#0099ff')
                     .setDescription('Reproduciendo ' + hyperlink(res.title, res.url))
                     .setThumbnail(res.thumbnail)
-                await interaction.reply({ embeds: [embed] });
+                // await interaction.reply({ embeds: [embed] });
+                send(interaction, embed, slash);
             }
         }
         else
@@ -122,7 +127,8 @@ module.exports = {
             let embed = new MessageEmbed()
                 .setColor('#de3826')
                 .setDescription('No hay canciones en la lista')
-            await interaction.reply({ embeds: [embed] });
+            // await interaction.reply({ embeds: [embed] });
+            send(interaction, embed, slash);
         }
     },
 };

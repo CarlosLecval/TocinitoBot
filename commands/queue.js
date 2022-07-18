@@ -10,15 +10,19 @@ const {
 } = require('@discordjs/voice');
 const { Playlist, playlistMap } = require('../playlist');
 const play = require('./play');
+const { send } = require('../utils');
 
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('queue')
         .setDescription('Lista de canciones'),
-    async execute(interaction, args) {
+    async execute(interaction, args, slash) {
         const voiceChannel = interaction.member.voice.channel;
 
         if (!voiceChannel) {
+            // let embed = new MessageEmbed()
+            //     .setColor('#de3826')
+            //     .setDescription('No estás en un canal de voz')
             await interaction.reply('No estás en un canal de voz');
             return;
         }
