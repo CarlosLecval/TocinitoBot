@@ -125,6 +125,25 @@ module.exports = {
                         }
                     }
                     break;
+                case 'www.youtube.com':
+                    let validate = play.yt_validate(title);
+                    if (validate == 'playlist') {
+                        let yt_info = await play.playlist_info(title, {incomplete: true});
+                        let playlistVideos = yt_info.videos;
+                        for (var i = 0; i < playlistVideos.length; i++) {
+                            let vid = playlistVideos[i];                            
+                            if (vid) {
+                                video.push(vid);
+                            }
+                        }
+                    }
+                    else {
+                        let vid = await videoFinder(title);
+                        if (vid) {
+                            video.push(vid);
+                        }
+                    }
+                    break;
                 default:
                     let vid = await videoFinder(title);
                     if (vid) {
