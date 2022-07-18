@@ -28,6 +28,7 @@ module.exports = {
         .setDescription('Pausa canción'),
     async execute(interaction, args, slash) {
         const voiceChannel = interaction.member.voice.channel;
+        //hola
 
         if (!voiceChannel) {
             let embed = new MessageEmbed()
