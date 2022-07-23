@@ -46,15 +46,14 @@ module.exports = {
             }
             catch (error) {}
             let embed = new MessageEmbed()
-            .setColor('#26de41')
-            .setDescription('Lista de reproducción limpia')
+                .setColor('#26de41')
+                .setDescription('Lista de reproducción limpia')
             send(interaction, embed, slash);
+            return;
         }
-        else {
-            let embed = new MessageEmbed()
+        let embed = new MessageEmbed()
             .setColor('#de3826')
             .setDescription('Tocinito no está en un canal de voz')
-            send(interaction, embed, slash);
-        }
+        send(interaction, embed, slash);
     },
 };
