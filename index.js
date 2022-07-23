@@ -3,7 +3,7 @@ const { Client, Collection, Intents, GuildMemberManager } = require('discord.js'
 const play = require('play-dl');
 require('dotenv').config();
 
-var prefix = '$';
+var prefix = '-';
 
 var setTokens = async () => {
     await play.setToken({
@@ -38,6 +38,7 @@ for (const file of commandFiles) {
 
 client.once('ready', () => {
     console.log('Ready!');
+    client.user.setActivity('-help');
 });
 
 client.on('interactionCreate', async interaction => {
