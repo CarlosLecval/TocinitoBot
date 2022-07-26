@@ -72,7 +72,7 @@ client.on("messageCreate", async message => {
         await command.execute(message, args, false);
     } catch (error) {
         console.error(error);
-        await interaction.reply({ content: 'There was an error while executing this command!', ephemeral: true });
+        await message.channel.send({ content: 'There was an error while executing this command!', ephemeral: true });
     }
 });
 
