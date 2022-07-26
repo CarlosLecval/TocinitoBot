@@ -1,14 +1,15 @@
 class Playlist {
-    constructor(url, title, thumbnail, artist, source)
+    constructor(url, title, thumbnail, artist, source, duration)
     {
-        var temp = new Song(url, title, thumbnail, artist, source, null);
+        var temp = new Song(url, title, thumbnail, artist, source, duration, null);
         this.head = temp
         this.last = temp
+        this.playing = temp
     }
 
-    add(url, title, thumbnail, artist, source)
+    add(url, title, thumbnail, artist, source, duration)
     {
-        var node = new Song(url, title, thumbnail, artist, source, null);
+        var node = new Song(url, title, thumbnail, artist, source, duration, null);
         if(this.head == null)
         {
             this.head = node;
@@ -26,21 +27,23 @@ class Playlist {
     {
         if(this.head == null)
         {
+            this.playing = null;
             return null;
         }
-        else if(this.head == this.last)
+
+        if(this.head == this.last)
         {
             var temp = this.head;
             this.head = null;
             this.last = null;
+            this.playing = temp;
             return temp;
         }
-        else
-        {
-            var current = this.head;
-            this.head = this.head.next;
-            return current;
-        }
+
+        var current = this.head;
+        this.head = this.head.next;
+        this.playing = current;
+        return current;
     }
 
     clear()
@@ -51,7 +54,7 @@ class Playlist {
 }
 
 class Song {
-    constructor(url, title, thumbnail, artist, source, next) 
+    constructor(url, title, thumbnail, artist, source, duration, next) 
     {
         this.url = url;
         this.next = next;
@@ -59,6 +62,7 @@ class Song {
         this.thumbnail = thumbnail;
         this.source = source;
         this.artist = artist;
+        this.duration = duration;
     }
 }
 

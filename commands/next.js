@@ -103,6 +103,7 @@ async function getPlayer(connection, interaction, playlist) {
                 channel.send({ embeds: [embed] });
                 return;
             }
+            playlist.playing = null;
             setTimeout(() => {
                 const con = getVoiceConnection(id);
                 if (con.state.subscription.player.state.status != 'playing') {

@@ -26,8 +26,8 @@ const { send, getTimeString } = require('../utils');
 
 module.exports = {
     data: new SlashCommandBuilder()
-        .setName('queue')
-        .setDescription('Lista de canciones'),
+        .setName('song')
+        .setDescription('Información de canción actual'),
     async execute(interaction, args, slash) {
         const voiceChannel = interaction.member.voice.channel;
 
@@ -38,32 +38,24 @@ module.exports = {
             send(interaction, embed, slash);
             return;
         }
-        
+
         const playlist = playlistMap.get(interaction.guild.id);
-        
-        if(!playlist || (playlist.head == null && playlist.playing == null))
-        {
+        const con = getVoiceConnection(interaction.guild.id);
+
+        if (!playlist || (playlist.head == null && playlist.playing == null) || (con?.state?.subscription?.player?.state?.status != 'playing' && con?.state?.subscription?.player?.state?.status != 'paused')) {
             let embed = new MessageEmbed()
                 .setColor('#de3826')
-                .setDescription('No hay nada en la lista de reproducción')
+                .setDescription('No hay nada sonando')
             send(interaction, embed, slash);
             return;
         }
 
-        const con = getVoiceConnection(interaction.guild.id);
         var playback = con.state.subscription?.player?.state?.playbackDuration;
         let embed = new MessageEmbed()
             .setColor('#0099ff')
             .setTitle("Ahora suena")
             .setDescription(`${hyperlink(playlist.playing.title, playlist.playing.url)} - ${inlineCode(`[${getTimeString(playback)}/${getTimeString(playlist.playing.duration)}]`)}`)
         ;
-        var output = "";
-        var temp = playlist.head
-        while(temp != null) {
-            output += `- ${hyperlink(temp.title, temp.url) }\n`;
-            temp = temp.next; 
-        }
-        if (output != "") embed.addFields({ name: 'Canciones en cola', value: output });
         send(interaction, embed, slash);
     },
 };

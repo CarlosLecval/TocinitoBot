@@ -92,10 +92,10 @@ module.exports = {
         for (let i = 0; i < video.length; i++) {
             let playlist = playlistMap.get(interaction.guild.id);
             if (!playlist) {
-                playlistMap.set(interaction.guild.id, new Playlist(video[i].url, video[i].title, video[i].thumbnails[0].url, video[i].artist, video[i].source));
+                playlistMap.set(interaction.guild.id, new Playlist(video[i].url, video[i].title, video[i].thumbnails[0].url, video[i].artist, video[i].source, video[i].duration));
                 continue;
             }
-            playlist.add(video[i].url, video[i].title, video[i].thumbnails[0].url, video[i].artist, video[i].source);
+            playlist.add(video[i].url, video[i].title, video[i].thumbnails[0].url, video[i].artist, video[i].source, video[i].duration);
         }
         
         if ((connection.state.subscription?.player?.state?.status == 'playing' || connection.state.subscription?.player?.state?.status == 'paused') && video.length == 1) {
@@ -178,6 +178,7 @@ async function spotify(title, video)
             if (vid) {
                 vid.source = 'youtube';
                 vid.artist = vid.channel.name;
+                vid.duration = vid.durationInSec * 1000;
                 video.push(vid);
             }
             resolve(video);
@@ -189,6 +190,7 @@ async function spotify(title, video)
             songs[i].thumbnails = [sp_data.thumbnail];
             songs[i].title = songs[i].name;
             songs[i].artist = songs[i].artists[0].name;
+            songs[i].duration = songs[i].durationInSec * 1000;
             video.push(songs[i]);
         }
         resolve(video);
@@ -205,6 +207,7 @@ async function youtube(title, video)
             if (vid) {
                 vid.source = 'youtube';
                 vid.artist = vid.channel.name;
+                vid.duration = vid.durationInSec * 1000;
                 video.push(vid);
             }
             resolve(video);
@@ -216,6 +219,7 @@ async function youtube(title, video)
             let vid = playlistVideos[i];
             vid.source = 'youtube';
             vid.artist = vid.channel.name;
+            vid.duration = vid.durationInSec * 1000;
             video.push(vid);
         }
         resolve(video);
@@ -232,7 +236,8 @@ async function soundcloud(title, video)
                 title: so_data.name,
                 thumbnails: [{url: so_data.thumbnail}],
                 source: 'soundcloud',
-                artist: so_data.user.name
+                artist: so_data.user.name,
+                duration: so_data.durationInSec * 1000
             };
             video.push(vid);
             resolve(video);
@@ -246,7 +251,8 @@ async function soundcloud(title, video)
                     title: songs[i].name,
                     thumbnails: [{url: songs[i].thumbnail}],
                     source: 'soundcloud',
-                    artist: songs[i].user.name
+                    artist: songs[i].user.name,
+                    duration: songs[i].durationInSec * 1000
                 };
                 video.push(vid);
             }
@@ -262,6 +268,7 @@ function def(title, video)
         if (vid) {
             vid.source = 'youtube';
             vid.artist = vid.channel.name;
+            vid.duration = vid.durationInSec * 1000;
             video.push(vid);
         }
         resolve(video);
@@ -304,6 +311,7 @@ async function getPlayer(connection, interaction, playlist)
                 channel.send({ embeds: [embed] });
                 return;
             }
+            playlist.playing = null;
             setTimeout(() => {
                 const con = getVoiceConnection(id);
                 if (con.state.subscription.player.state.status != 'playing') {
