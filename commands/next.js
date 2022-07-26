@@ -37,17 +37,17 @@ module.exports = {
         }
         
         const playlist = playlistMap.get(interaction.guild.id);
+        const con = getVoiceConnection(interaction.guild.id);
         
         if(!playlist || playlist.head == null)
         {
+            let output = await lastSong(con);
             let embed = new MessageEmbed()
-                .setColor('#de3826')
-                .setDescription('No hay canciones en la lista')
+                .setColor('#0099ff')
+                .setDescription(output)
             send(interaction, embed, slash);
             return;
         }
-
-        const con = getVoiceConnection(interaction.guild.id);
 
         let res = await getNextResource(interaction, slash);
         var player = await getPlayer(con, interaction, playlist);
@@ -144,4 +144,14 @@ const getNextResource = async (interaction, slash) => {
         thumbnail: current.thumbnail,
         slash: slash
     };
+}
+
+async function lastSong(con)
+{
+    var result = con?.state?.subscription?.player?.stop?.();
+    if (result == undefined || con?.state?.subscription?.player?.state?.status != 'playing')
+    {
+        return "No hay música activa";
+    }
+    return "Última canción de la lista saltada"
 }
