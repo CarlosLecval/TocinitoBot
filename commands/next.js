@@ -79,6 +79,17 @@ async function getPlayer(connection, interaction, playlist) {
         let player = createAudioPlayer();
         connection.subscribe(player);
 
+        connection.on(VoiceConnectionStatus.Disconnected, async (oldState, newState) => {
+            try {
+                await Promise.race([
+                    entersState(connection, VoiceConnectionStatus.Signalling, 5_000),
+                    entersState(connection, VoiceConnectionStatus.Connecting, 5_000),
+                ]);
+            } catch (error) {
+                connection.destroy();
+            }
+        });
+
         player.on(AudioPlayerStatus.Idle, async () => {
             var id = interaction.guild.id;
             var channel = interaction.channel;
