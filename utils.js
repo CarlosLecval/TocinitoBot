@@ -7,9 +7,11 @@ module.exports.getTimeString = (ms) => {
 
     var seconds = Math.floor(ms / 1000);
     var minutes = Math.floor(seconds / 60);
-
+    var hours = Math.floor(minutes / 60);
+    
+    hours %= 24;
     minutes %= 60;
     seconds %= 60;
 
-    return `${minutes}:${seconds < 10 ? "0" : ""}${seconds}`;
+    return hours > 0 ? `${hours}:${minutes < 10 ? "0" : ""}${minutes}:${seconds}` : `${minutes}:${seconds < 10 ? "0" : ""}${seconds}`;
 }

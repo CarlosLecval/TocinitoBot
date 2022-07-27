@@ -60,7 +60,7 @@ module.exports = {
         var output = "";
         var temp = playlist.head
         while(temp != null) {
-            output += `- ${hyperlink(temp.title, temp.url) }\n`;
+            output += `- ${hyperlink(temp.title, temp.url) } - ${inlineCode(`[${getTimeString(temp.duration)}]`)}\n`;
             temp = temp.next; 
         }
         if (output != "") embed.addFields({ name: 'Canciones en cola', value: output });

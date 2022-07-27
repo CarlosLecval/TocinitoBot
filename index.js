@@ -3,7 +3,7 @@ const { Client, Collection, Intents, GuildMemberManager } = require('discord.js'
 const play = require('play-dl');
 require('dotenv').config();
 
-var prefix = '-';
+var prefix = process.env.NODE_ENV === 'production' ? '-' : '$';
 
 var setTokens = async () => {
     await play.setToken({
