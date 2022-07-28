@@ -1,5 +1,6 @@
 const fs = require('fs');
-const { Client, Collection, Intents, GuildMemberManager } = require('discord.js');
+const { Client, Collection, Intents, MessageEmbed } = require('discord.js');
+const { inlineCode, } = require('@discordjs/builders');
 const play = require('play-dl');
 require('dotenv').config();
 
@@ -38,7 +39,7 @@ for (const file of commandFiles) {
 
 client.once('ready', () => {
     console.log('Ready!');
-    client.user.setActivity('-help');
+    // client.user.setActivity('-help');
 });
 
 client.on('interactionCreate', async interaction => {
@@ -74,6 +75,15 @@ client.on("messageCreate", async message => {
         console.error(error);
         await message.channel.send({ content: 'There was an error while executing this command!', ephemeral: true });
     }
+});
+
+client.on("guildCreate", async guild => {
+    let embed = new MessageEmbed()
+        .setColor('#8585E5')
+        .setTitle("Tocinito")
+        .setDescription("¡Gracias por invitarme!")
+        .addField("\u200B", `Para empezar, únete a un canal de voz y reproduce una canción con ${inlineCode("/play")}`)
+    guild.systemChannel.send({ embeds: [embed] });
 });
 
 client.login(process.env.TOKEN);
