@@ -22,13 +22,14 @@ const {
 } = require('@discordjs/voice');
 const { Playlist, playlistMap } = require('../playlist');
 const play = require('./play');
-const { send, getTimeString } = require('../utils');
+const { getTimeString } = require('../utils');
 
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('queue')
         .setDescription('Lista de canciones'),
     async execute(interaction, args, slash) {
+        if (slash) await interaction.deferReply();
         const voiceChannel = interaction.member.voice.channel;
 
         if (!voiceChannel) {
@@ -67,3 +68,12 @@ module.exports = {
         send(interaction, embed, slash);
     },
 };
+
+const send = (interaction, embed, slash) => {
+    if (slash) {
+        interaction.editReply({ embeds: [embed] });
+        return false;
+    }
+    interaction.channel.send({ embeds: [embed] });
+    return false;
+}
