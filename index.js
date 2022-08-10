@@ -13,6 +13,9 @@ var setTokens = async () => {
             client_secret: process.env.SPOTIFY_CLIENT_SECRET,
             refresh_token: process.env.SPOTIFY_REFRESH_TOKEN,
             market: 'MX'
+        },
+        youtube: {
+            cookie: process.env.YOUTUBE_COOKIE,
         }
     })
     play.getFreeClientID().then((clientID) => {
