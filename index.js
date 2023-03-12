@@ -4,8 +4,6 @@ const { inlineCode, } = require('@discordjs/builders');
 const play = require('play-dl');
 require('dotenv').config();
 
-//commit para subir al servidor
-
 var prefix = process.env.NODE_ENV === 'production' ? '-' : '$';
 
 var setTokens = async () => {
